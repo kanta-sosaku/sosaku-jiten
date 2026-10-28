@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>創作辞典</title>
-<meta name="description" content="かんたと母の、言葉の単語帳と創作ネタ帳">
+<meta name="description" content="かんたとゆうこの、言葉の単語帳と創作ネタ帳">
 <meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#16130f" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -90,7 +90,7 @@ header.top{padding:28px 0 8px;display:flex;align-items:flex-end;justify-content:
 .item .m{grid-column:1/2;color:var(--ink-2);font-size:13.5px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .item .side{grid-row:1/3;grid-column:2;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .tag{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--paper-2);color:var(--ink-2);white-space:nowrap}
-.tag.by-母{background:var(--ai-soft);color:var(--ai)}
+.tag.by-yuko{background:var(--ai-soft);color:var(--ai)}
 .heat{display:flex;gap:3px}
 .heat i{width:6px;height:6px;border-radius:50%;background:var(--line)}
 .heat i.on{background:var(--shu)}
@@ -161,6 +161,24 @@ nav.tabs button[aria-selected="true"]{background:var(--paper);color:var(--ink);o
 .score small{font-size:22px;color:var(--ink-3)}
 .miss{margin-top:18px}
 
+.qdesc{font-size:12.5px;color:var(--ink-2);margin:8px 2px 0}
+.typer{margin-top:14px;display:grid;gap:10px}
+.typer input,.typer textarea{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:14px;font-size:18px;font-family:var(--mincho);outline:none;resize:none;line-height:1.5}
+.typer textarea{font-family:var(--gothic);font-size:16px}
+.typer input:focus,.typer textarea:focus{border-color:var(--ink)}
+.trow{display:flex;gap:8px}.trow .btn.fill{flex:1.6}
+.btn.ghost{border-color:var(--line);color:var(--ink-2);font-weight:500}
+.btn:disabled{opacity:.45}
+.hintbox{font-size:13px;color:var(--ai);background:var(--ai-soft);border-radius:10px;padding:8px 12px}
+.yomi-s{color:var(--ink-3);font-size:13px;margin-top:2px}
+.qq.ans{margin-top:14px;text-align:left;padding:16px 18px;border-left:4px solid var(--line)}
+.qq.ans.is-ok{border-left-color:var(--matcha)}.qq.ans.is-ng{border-left-color:var(--shu)}
+.qq.ans .lbl{color:var(--ink-2)}.qq.ans.is-ok .lbl{color:var(--matcha)}.qq.ans.is-ng .lbl{color:var(--shu)}
+.aw{font-family:var(--mincho);font-weight:700;font-size:20px;margin-top:4px}.aw small{font-family:var(--gothic);font-size:12px;color:var(--ink-3);font-weight:400}
+.am{font-size:14px;margin-top:2px}.aex{font-size:13px;color:var(--ink-2);margin-top:4px}
+.yours{font-size:13px;color:var(--ink-2);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.self{display:flex;gap:8px;margin-top:12px}
+.omean{display:block;font-family:var(--gothic);font-weight:400;font-size:12px;color:var(--ink-3);margin-top:4px;line-height:1.5}
 /* idea */
 .idea{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 18px;box-shadow:var(--shadow)}
 .idea .three{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 12px}
@@ -188,7 +206,7 @@ nav.tabs button[aria-selected="true"]{background:var(--paper);color:var(--ink);o
 <!-- 辞典 -->
 <section class="view" id="v-dict">
   <header class="top">
-    <div class="brand"><div class="hanko">創</div><div><h1>創作辞典</h1><small>KANTA &amp; HAHA'S WORDBOOK</small></div></div>
+    <div class="brand"><div class="hanko">創</div><div><h1>創作辞典</h1><small>KANTA &amp; YUKO'S WORDBOOK</small></div></div>
     <div style="display:flex;align-items:center"><div class="stat"><b id="total">0</b> 語<br><span id="byline"></span></div>
     <button class="themebtn" id="themeBtn" aria-label="明るさを切り替える">◐</button></div>
   </header>
@@ -219,6 +237,7 @@ nav.tabs button[aria-selected="true"]{background:var(--paper);color:var(--ink);o
 <section class="view" id="v-quiz" hidden>
   <div id="quizHome">
     <div class="qhead"><h2>腕だめし</h2><p>1回10問。まちがえた言葉は、次から出やすくなるよ。</p></div>
+    <p class="qdesc" id="qdesc"></p>
     <div class="qtype chips" id="qtype"></div>
     <div class="modes">
       <button class="mode" data-mode="rand"><b>ランダム</b><span>全部の言葉からまんべんなく</span><em class="num">10</em></button>
@@ -295,7 +314,8 @@ const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMo
 
 // ---- 上の情報 ----
 $('#total').textContent = W.length;
-const byCount = W.reduce((a, e) => (a[e.by] = (a[e.by] || 0) + 1, a), {});
+const byOf = e => String(e.by || '').split('・');
+const byCount = W.reduce((a, e) => (byOf(e).forEach(b => a[b] = (a[b] || 0) + 1), a), {});
 $('#byline').textContent = Object.entries(byCount).map(([k, v]) => `${k} ${v}`).join('・');
 if (META.updated) $('#updated').textContent = '最終更新：' + META.updated;
 
@@ -373,7 +393,7 @@ function filtered(){
   for (const e of W) {
     if (state.who === 'fav' && !favs.has(keyOf(e))) continue;
     if ((state.who === '文語' || state.who === '口語') && e.s !== state.who) continue;
-    if (!['all','fav','文語','口語'].includes(state.who) && e.by !== state.who) continue;
+    if (!['all','fav','文語','口語'].includes(state.who) && !byOf(e).includes(state.who)) continue;
     if (state.genre !== 'all' && e.g !== state.genre && !(e.x || []).includes(state.genre)) continue;
     const m = match(e, state.q); if (!m.hit) continue;
     r.push({e, m});
@@ -398,7 +418,7 @@ function render(){
   $('#list').innerHTML = r.slice(0, state.limit).map(({e, m}) => `
     <li class="item" data-id="${e.id}">
       <div class="w">${hl(e.w, state.q)}${e.r ? `<small>${esc(e.r)}</small>` : ''}</div>
-      <div class="side"><span class="tag ${e.by === '母' ? 'by-母' : ''}">${esc(e.g || e.cat || '')}</span>${heat(e)}</div>
+      <div class="side"><span class="tag ${byOf(e).includes('ゆうこ') ? 'by-yuko' : ''}">${esc(e.g || e.cat || '')}</span>${heat(e)}</div>
       <div class="m">${esc(e.mean)}</div>
       ${m.why ? `<div class="why">↳ ${esc(m.why)}</div>` : ''}
     </li>`).join('') || `<li class="empty">見つからなかった。<br>別の言い方でも探してみて。</li>`;
@@ -419,9 +439,10 @@ function openSheet(e){
     <div class="d-head"><div class="d-tate">${esc(e.w)}</div>
       <div><div class="d-yomi">${esc(e.r)}</div><div class="d-mean">${esc(e.mean)}</div>
       <div class="d-tags">${[e.g, ...(e.x || []), e.s].filter(Boolean).map(t => `<span class="tag">${esc(t)}</span>`).join('')}
-      <span class="tag ${e.by === '母' ? 'by-母' : ''}">${esc(e.by)}</span></div></div></div>
+      <span class="tag ${byOf(e).includes('ゆうこ') ? 'by-yuko' : ''}">${esc(e.by)}</span>${e.original ? '<span class="tag">オリジナル</span>' : ''}</div></div></div>
     ${e.ex ? `<div class="d-sec"><h4>例文</h4><p>${esc(e.ex)}</p></div>` : ''}
     ${e.use ? `<div class="d-sec"><h4>創作での使いどころ</h4><p>${esc(e.use)}</p></div>` : ''}
+    ${e.book ? `<div class="d-sec"><h4>出てきた本</h4><p>『${esc(e.book)}』${e.author ? ' ' + esc(e.author) : ''}</p></div>` : ''}
     ${e.tip ? `<div class="d-sec"><h4>豆知識</h4><p>${esc(e.tip)}</p></div>` : ''}
     ${(e.k || []).length ? `<div class="d-sec"><h4>近い気持ち・イメージ</h4><div class="kw">${e.k.map(x => `<button data-k="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>` : ''}
     <div class="d-sec"><h4>記録</h4><p style="font-size:13px;color:var(--ink-2)">書いた回数 ${e.count} 回 ・ クイズ 正解 ${h.ok} / まちがい ${h.ng}${e.memo ? '<br>メモ：' + esc(e.memo) : ''}</p></div>
@@ -450,12 +471,64 @@ function go(v){
 document.querySelector('nav.tabs').onclick = ev => { const b = ev.target.closest('button'); if (b) go(b.dataset.v); };
 
 // ---- クイズ ----
-let qtype = store.get('qtype', 'mean');
+// 出し方：write＝意味を見て言葉を書く／mean＝言葉を見て意味を書く／choice＝似た言葉の4択／mix
+const QTYPES = [['write','言葉を書く'], ['mean','意味を書く'], ['choice','似た言葉の4択'], ['mix','まぜる']];
+let qtype = store.get('qtype2', 'write');
+const bigrams = s => { s = norm(s).replace(/[、。，．,.!！?？「」『』（）()〜~ー\-]/g, ''); const a = new Set(); for (let i = 0; i < s.length - 1; i++) a.add(s.slice(i, i + 2)); if (s.length === 1) a.add(s); return a; };
+const MEANBG = new Map(W.map(e => [e.id, bigrams(e.mean)]));
+const overlap = (a, b) => { let n = 0; a.forEach(x => b.has(x) && n++); return n; };
+
+// 似た言葉を探す（4択のハズレ用）：キーワード・表現の種類・意味の文字の重なりで点をつける
+function similar(e, n){
+  const ks = new Set((e.k || []).map(norm)), mb = MEANBG.get(e.id);
+  return W.filter(x => x !== e && x.mean && norm(x.w) !== norm(e.w))
+    .map(x => {
+      let s = 0;
+      (x.k || []).forEach(k => { if (ks.has(norm(k))) s += 3; });
+      (x.x || []).forEach(v => { if ((e.x || []).includes(v)) s += 1.5; });
+      if (x.g === e.g) s += 1;
+      if (x.s === e.s) s += .5;
+      s += overlap(mb, MEANBG.get(x.id)) * .8;
+      return {x, s};
+    })
+    .filter(o => overlap(mb, MEANBG.get(o.x.id)) / Math.max(mb.size, 1) < .75)  // ほぼ同じ意味の言葉は外す
+    .sort((a, b) => b.s - a.s).slice(0, n).map(o => o.x);
+}
+
+// 書いた言葉の判定：漢字でも読みでもOK。1文字ちがいは「おしい」で正解
+function lev(a, b){ const m = a.length, n = b.length; const d = Array.from({length: m + 1}, (_, i) => [i, ...Array(n).fill(0)]); for (let j = 1; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)); return d[m][n]; }
+function judgeWord(e, ans){
+  const a = norm(ans).replace(/[、。]/g, ''); if (!a) return {ok: false};
+  const cands = [e.w, e.r, ...(e.memo.match(/「(.+?)」/g) || []).map(s => s.slice(1, -1))].filter(Boolean).map(norm);
+  if (cands.includes(a)) return {ok: true, msg: 'せいかい'};
+  if (cands.some(c => c.length >= 4 && lev(a, c) <= 1)) return {ok: true, msg: 'おしい！ほぼせいかい'};
+  return {ok: false, msg: 'ざんねん'};
+}
+// 書いた意味の判定：言いかえ集（p）・キーワード・意味の文字の重なりで、ざっくり判定する
+const STOP = new Set(['こと','する','して','ない','さま','よう','もの','てい','いる','った','れる','られ','です','ます','とい','いう','ある','なる','ので','から','ても','まま','ような','人が','人の','人を']);
+const content = set => { const r = new Set(); set.forEach(x => STOP.has(x) || r.add(x)); return r; };
+function judgeMean(e, ans){
+  const a = norm(ans);
+  if (a.length < 2) return {level: 0};
+  if (a.includes(norm(e.w)) || (e.r && a.includes(norm(e.r)))) return {level: 0, note: '言葉そのものは使わずに説明してね'};
+  const frags = [...new Set([...(e.p || []), ...(e.k || [])].map(norm))].filter(f => f.length >= 2);
+  const hits = frags.filter(f => a.includes(f) || expand(f).some(v => v.length >= 2 && a.includes(v)));
+  const ab = content(bigrams(ans));
+  const target = content(new Set([...MEANBG.get(e.id), ...frags.flatMap(f => [...bigrams(f)])]));
+  const ov = ab.size ? overlap(ab, target) / ab.size : 0;
+  const level = (hits.length >= 2 || (hits.length && ov >= .25) || ov >= .5) ? 2 : (hits.length || ov >= .2) ? 1 : 0;
+  return {level};
+}
+
 function quizHome(){
   $('#quizHome').hidden = false; $('#quizPlay').hidden = true;
-  const items = [['mean','意味 → 言葉'], ['word','言葉 → 意味'], ['mix','まぜる']];
-  $('#qtype').innerHTML = items.map(([v, l]) => `<button class="chip" data-v="${v}" aria-pressed="${qtype === v}">${l}</button>`).join('');
-  $('#qtype').onclick = ev => { const b = ev.target.closest('.chip'); if (!b) return; qtype = b.dataset.v; store.set('qtype', qtype); quizHome(); };
+  $('#qtype').innerHTML = QTYPES.map(([v, l]) => `<button class="chip" data-v="${v}" aria-pressed="${qtype === v}">${l}</button>`).join('');
+  $('#qtype').onclick = ev => { const b = ev.target.closest('.chip'); if (!b) return; qtype = b.dataset.v; store.set('qtype2', qtype); quizHome(); };
+  $('#qdesc').textContent = {write: '意味を読んで、その言葉を書く。漢字でもひらがなでもOK。',
+    mean: '言葉を見て、意味を自分の言葉で書く。だいたい合っていれば正解。',
+    choice: '意味の近い、まぎらわしい言葉から選ぶ4択。',
+    mix: '3つの出し方がまざって出る。'}[qtype];
   const all = Object.values(hist).reduce((a, h) => ({ok: a.ok + h.ok, ng: a.ng + h.ng}), {ok: 0, ng: 0});
   const tot = all.ok + all.ng;
   let streak = 0; for (let d = new Date(); ; d.setDate(d.getDate() - 1)) { const k = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; if (log[k]) streak++; else if (streak || k !== today()) break; if (streak > 999) break; }
@@ -466,11 +539,7 @@ let Q = null;
 function pickSet(mode){
   let pool = W.filter(e => e.mean);
   if (mode === 'fav') { pool = pool.filter(e => favs.has(keyOf(e))); if (pool.length < 4) { toast('しおりが4語以上いるよ'); return null; } }
-  if (mode === 'weak') {
-    const ranked = pool.map(e => ({e, s: weakScore(e) + Math.random() * 1.5})).sort((a, b) => b.s - a.s);
-    return ranked.slice(0, 10).map(x => x.e);
-  }
-  // ランダム：最近あまり出ていない言葉を少し優先
+  if (mode === 'weak') return pool.map(e => ({e, s: weakScore(e) + Math.random() * 1.5})).sort((a, b) => b.s - a.s).slice(0, 10).map(x => x.e);
   return shuffle(pool).slice(0, 10);
 }
 function startQuiz(mode){
@@ -478,35 +547,85 @@ function startQuiz(mode){
   Q = {set, i: 0, res: [], mode};
   $('#quizHome').hidden = true; $('#quizPlay').hidden = false; askQ();
 }
+function record(e, ok){
+  const k = keyOf(e); hist[k] = hist[k] || {ok: 0, ng: 0}; hist[k][ok ? 'ok' : 'ng']++; store.set('hist', hist);
+  log[today()] = (log[today()] || 0) + 1; store.set('log', log);
+  Q.res[Q.i] = ok;
+  if (navigator.vibrate && !ok) navigator.vibrate(30);
+}
+function answerCard(e, ok, msg, extra = ''){
+  return `<div class="qq ans ${ok === true ? 'is-ok' : ok === false ? 'is-ng' : ''}">
+    <div class="lbl">${esc(msg)}</div>
+    <div class="aw">${esc(e.w)} <small>${esc(e.r)}</small></div>
+    <div class="am">${esc(e.mean)}</div>
+    ${e.ex ? `<div class="aex">例：${esc(e.ex)}</div>` : ''}${extra}</div>`;
+}
+function nextBtn(){
+  $('#after').insertAdjacentHTML('beforeend', `<button class="btn fill qnext" id="nextQ">${Q.i + 1 < Q.set.length ? '次へ' : '結果を見る'}</button>`);
+  $('#nextQ').onclick = () => { Q.i++; Q.i < Q.set.length ? askQ() : showResult(); };
+  $('#nextQ').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
 function askQ(){
   const e = Q.set[Q.i];
-  const t = qtype === 'mix' ? (Math.random() < .5 ? 'mean' : 'word') : qtype;
-  const same = W.filter(x => x !== e && x.mean && x.g === e.g);
-  const others = shuffle(same.length >= 3 ? same : W.filter(x => x !== e && x.mean)).slice(0, 3);
-  const opts = shuffle([e, ...others]);
+  let t = qtype === 'mix' ? ['write', 'mean', 'choice'][Math.random() * 3 | 0] : qtype;
   const prog = Q.set.map((_, i) => `<i class="${i < Q.i ? (Q.res[i] ? 'ok' : 'ng') : i === Q.i ? 'now' : ''}"></i>`).join('');
-  $('#quizPlay').innerHTML = `<div class="qhead"><h2>${Q.i + 1}<small style="font-size:14px;color:var(--ink-3)"> / ${Q.set.length}</small></h2></div>
-    <div class="qcard"><div class="qprog">${prog}</div>
-    <div class="qq">${t === 'mean'
-      ? `<div class="lbl">この意味の言葉は？</div><div class="mid">${esc(e.mean)}</div>`
-      : `<div class="lbl">この言葉の意味は？</div><div class="big">${esc(e.w)}</div>`}</div>
-    <div class="opts">${opts.map(o => `<button class="opt ${t === 'mean' ? 'w' : ''}" data-id="${o.id}">${esc(t === 'mean' ? o.w : o.mean)}</button>`).join('')}</div>
-    <div id="after"></div></div>`;
-  $('#quizPlay').querySelector('.opts').onclick = ev => {
-    const b = ev.target.closest('.opt'); if (!b || Q.done) return; Q.done = true;
-    const ok = +b.dataset.id === e.id;
-    $('#quizPlay').querySelectorAll('.opt').forEach(x => { if (+x.dataset.id === e.id) x.classList.add('ok'); else if (x === b) x.classList.add('ng'); });
-    const k = keyOf(e); hist[k] = hist[k] || {ok: 0, ng: 0}; hist[k][ok ? 'ok' : 'ng']++; store.set('hist', hist);
-    log[today()] = (log[today()] || 0) + 1; store.set('log', log);
-    Q.res.push(ok);
-    if (navigator.vibrate && !ok) navigator.vibrate(30);
-    $('#after').innerHTML = `<div class="qq" style="margin-top:14px;text-align:left;padding:16px 18px">
-      <div class="lbl" style="color:${ok ? 'var(--matcha)' : 'var(--shu)'}">${ok ? 'せいかい' : 'ざんねん'}</div>
-      <div style="font-family:var(--mincho);font-weight:700;font-size:20px;margin-top:4px">${esc(e.w)} <small style="font-family:var(--gothic);font-size:12px;color:var(--ink-3)">${esc(e.r)}</small></div>
-      ${e.ex ? `<div style="font-size:13px;color:var(--ink-2);margin-top:4px">例：${esc(e.ex)}</div>` : ''}</div>
-      <button class="btn fill qnext" id="nextQ">${Q.i + 1 < Q.set.length ? '次へ' : '結果を見る'}</button>`;
-    $('#nextQ').onclick = () => { Q.done = false; Q.i++; Q.i < Q.set.length ? askQ() : showResult(); };
-    $('#nextQ').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  const head = `<div class="qhead"><h2>${Q.i + 1}<small style="font-size:14px;color:var(--ink-3)"> / ${Q.set.length}</small></h2></div><div class="qcard"><div class="qprog">${prog}</div>`;
+  if (t === 'choice') {
+    const opts = shuffle([e, ...shuffle(similar(e, 6)).slice(0, 3)]);
+    $('#quizPlay').innerHTML = head + `<div class="qq"><div class="lbl">この意味の言葉は？</div><div class="mid">${esc(e.mean)}</div></div>
+      <div class="opts">${opts.map(o => `<button class="opt w" data-id="${o.id}">${esc(o.w)}</button>`).join('')}</div><div id="after"></div></div>`;
+    $('#quizPlay').querySelector('.opts').onclick = ev => {
+      const b = ev.target.closest('.opt'); if (!b || Q.res[Q.i] !== undefined) return;
+      const ok = +b.dataset.id === e.id; record(e, ok);
+      $('#quizPlay').querySelectorAll('.opt').forEach(x => {
+        const o = W[+x.dataset.id];
+        if (+x.dataset.id === e.id) x.classList.add('ok'); else if (x === b) x.classList.add('ng');
+        if (o !== e) x.insertAdjacentHTML('beforeend', `<span class="omean">${esc(o.mean)}</span>`);
+      });
+      $('#after').innerHTML = answerCard(e, ok, ok ? 'せいかい' : 'ざんねん'); nextBtn();
+    };
+    return;
+  }
+  const isW = t === 'write';
+  $('#quizPlay').innerHTML = head + `<div class="qq">${isW
+      ? `<div class="lbl">この意味の言葉を書いて</div><div class="mid">${esc(e.mean)}</div>`
+      : `<div class="lbl">この言葉の意味を書いて</div><div class="big">${esc(e.w)}</div>${e.r ? `<div class="yomi-s">${esc(e.r)}</div>` : ''}`}</div>
+    <form class="typer" id="typer" autocomplete="off">
+      ${isW ? `<input id="ans" type="text" placeholder="漢字でも、ひらがなでも" enterkeyhint="done">`
+            : `<textarea id="ans" rows="2" placeholder="だいたいの意味でOK（例：ぼんやりして広い）" enterkeyhint="done"></textarea>`}
+      <div class="trow"><button type="button" class="btn ghost" id="hint">ヒント</button><button type="button" class="btn ghost" id="skip">わからない</button><button class="btn fill" type="submit">答える</button></div>
+      <div class="hintbox" id="hintbox" hidden></div>
+    </form><div id="after"></div></div>`;
+  const inp = $('#ans'); setTimeout(() => inp.focus({preventScroll: true}), 50);
+  let hinted = 0;
+  $('#hint').onclick = () => {
+    hinted++; const hb = $('#hintbox'); hb.hidden = false;
+    if (isW) { const y = e.r || e.w; hb.textContent = hinted === 1 ? `${[...y].length}文字・「${[...y][0]}」から始まる` : `${[...y].slice(0, 2).join('')}…（${[...y].length}文字）`; }
+    else hb.innerHTML = hinted === 1 ? `近いイメージ：${esc((e.k || []).slice(0, 2).join('、'))}` : `例文：${esc((e.ex || '').replace(e.w, '〇〇'))}`;
+  };
+  inp.addEventListener('keydown', ev => { if (ev.key === 'Enter' && !ev.isComposing && !ev.shiftKey) { ev.preventDefault(); $('#typer').requestSubmit(); } });
+  const finish = () => { $('#typer').querySelectorAll('input,textarea,button').forEach(x => x.disabled = true); };
+  $('#skip').onclick = () => { if (Q.res[Q.i] !== undefined) return; finish(); record(e, false); $('#after').innerHTML = answerCard(e, false, 'こたえ'); nextBtn(); };
+  $('#typer').onsubmit = ev => {
+    ev.preventDefault(); if (Q.res[Q.i] !== undefined) return;
+    const ans = inp.value.trim(); if (!ans) { inp.focus(); return; }
+    if (isW) {
+      const j = judgeWord(e, ans); finish(); record(e, j.ok);
+      $('#after').innerHTML = answerCard(e, j.ok, j.ok ? j.msg + (hinted ? '（ヒントあり）' : '') : `ざんねん（「${ans}」と書いた）`); nextBtn();
+      return;
+    }
+    const j = judgeMean(e, ans); finish();
+    const yours = `<div class="yours">あなたの答え：${esc(ans)}</div>`;
+    if (j.level === 2) { record(e, true); $('#after').innerHTML = answerCard(e, true, 'だいたい合ってる！せいかい', yours); nextBtn(); return; }
+    // 自動で決めきれないときは、正しい意味と見比べて自分で決める
+    $('#after').innerHTML = answerCard(e, null, j.note || (j.level === 1 ? 'おしいかも？ 見比べて決めてね' : '意味とずれているかも。見比べて決めてね'), yours +
+      `<div class="self"><button class="btn" data-ok="0">ちがってた</button><button class="btn fill" data-ok="1">合ってた</button></div>`);
+    $('#after').querySelector('.self').onclick = ev2 => {
+      const b = ev2.target.closest('button'); if (!b || Q.res[Q.i] !== undefined) return;
+      const ok = b.dataset.ok === '1'; record(e, ok);
+      const card = $('#after').querySelector('.ans'); card.classList.add(ok ? 'is-ok' : 'is-ng'); card.querySelector('.lbl').textContent = ok ? 'せいかい（自分で判定）' : 'ざんねん（自分で判定）';
+      $('#after').querySelector('.self').remove(); nextBtn();
+    };
   };
 }
 function showResult(){
@@ -536,6 +655,7 @@ function renderBars(){
   $('#bars').innerHTML = Object.entries(c).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div class="bar"><span>${esc(k)}</span><div class="t"><i style="width:${v / max * 100}%"></i></div><b>${v}</b></div>`).join('');
 }
 
+if (location.search.includes('debug')) window.__sj = {W, judgeMean, judgeWord, similar};
 renderToday(); render(); go(store.get('tab', 'dict'));
 })();
 </script>
